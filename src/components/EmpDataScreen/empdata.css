@@ -1,25 +1,20 @@
-table{
-    border : 1px solid;
-    margin:10px 20px;
-    padding:20px;
+.list-item{
+    display:flex;
 }
-tr{
-    margin:10px;
+ul, li{
+    list-style: none;
 }
-.btn-flex{
-    margin:10px 20px;
-    padding:20px;
+ul{
+    width:15%;
 }
-.btn{
-    font-size: 18px;
+li{
+    margin:10px 10px;
+    padding:10%;
+    height:15px;
+    background-color: #34d8eb;
+    border:1px solid;
     cursor:pointer;
 }
-.btn-delete{
-    color: red;
-}
-.btn-edit{
-    color:green;
-}
-.btn-insert{
-    color:blue;
+span{
+    margin-right:10px;
 }

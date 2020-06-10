@@ -1,28 +1,83 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import ListEmp from './ListEmp';
-import EditScreen from './editScreen';
 import './empdata.css';
 
 class EmpDataScreen extends Component {
 
     constructor(props) {
+        console.log('constructor')
         super(props);
         this.state = {
             empList: [],
-            // editList: [],
-            islogged: true
+            islogged: true,
+            dragSrcEl : ''
         }
-
-        this.handleChange = this.handleChange.bind(this);
-        this.deleteItem = this.deleteItem.bind(this);
-        this.editItem = this.editItem.bind(this);
-        this.handlebutton = this.handlebutton.bind(this)
     }
 
     componentDidMount() {
+        console.log('Component Did Mount')
         this.getEmployeeData();
     }
+    componentDidUpdate(){
+        let listItems = document.querySelectorAll('.draggable');
+        this.addDragAndDropEvennts(listItems);
+    }
+
+    onDragStart(e){
+        console.log('onDragStart', e)
+        console.log('this', typeof(this));
+        this.style.opacity = '0.4';
+        //this.setState({dragSrcEl : this})
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+    onDragEnter(e){
+        console.log("enter");
+        this.classList.add('over');
+    }
+    onDragOver(e){
+        console.log('dragover');
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    onDragLeave(e){
+        console.log('dragleave');
+        e.stopPropagation();
+        this.classList.remove('over');    
+    }
+    onDrop(e){
+        const { dragSrcEl } = this.state.dragSrcEl;
+        console.log('drop');
+        if (dragSrcEl !== this) {
+        dragSrcEl.innerHTML = this.innerHTML;
+        this.innerHTML = e.dataTransfer.getData('text/html');
+        }
+        return false;
+    }
+    onDragEnd(e){
+        console.log('dragend');
+        let listItens = document.querySelectorAll('.draggable');
+        listItens.forEach(item =>{
+            item.classList.remove('over');
+        })
+        this.style.opacity = '1';
+    }
+    handleClick(event){
+        console.log('click', event)
+    }
+    addDragAndDropEvennts(item){
+        item.forEach(el =>{
+            el.addEventListener('dragstart', this.onDragStart);
+            el.addEventListener('dragenter', this.onDragEnter);
+            el.addEventListener('dragover', this.onDragOver);
+            el.addEventListener('dragleave', this.onDragLeave);
+            el.addEventListener('drop', this.onDragDrop);
+            el.addEventListener('dragend', this.onDragEnd);
+        })
+    }
+    
     getEmployeeData() {
         axios.get('http://dummy.restapiexample.com/api/v1/employees')
             .then(res => {
@@ -33,57 +88,24 @@ class EmpDataScreen extends Component {
                 this.setState({ empList: tempEmpList })
             })
             .catch(error => {
-                console.log('Error', error)
+                console.log('Error', error);
+                alert('error')
             })
     }
-    deleteItem(){
-        const { empList } = this.state;
-        const filteredEmpList = empList.filter((emp) => !emp.selected);
-        this.setState({ empList: filteredEmpList });        
-    
-    }
-    // editItem(){
-    //     const { empList } = this.state;
-    //     const filteredEditList = empList.filter((emp) => emp.selected);
-    //     this.setState({ editList: filteredEditList });   
-    // }
-
-    handleChange(e) {
-        const elem = e.target;
-        const empItem = this.state.empList.find((emp) => emp.id === elem.value);
-        empItem.selected = elem.checked;
-    }
     render() {
-        const { empList, editList } = this.state;
+        console.log('render');
+        const { empList} = this.state;
         return (
-            <div>
-                
-                <div className="btn-flex">
-                    <button className="btn btn-delete" onClick = {this.deleteItem}>Delete</button>
-                    <button className="btn btn-edit" onClick = {this.editItem}>Edit</button>
-                </div>
-                <div className="editModel"> 
-                    {
-                        editList.map(edit => {
-                            return (
-                                <EditScreen key={edit.id} handlebutton={this.handlebutton} {...edit}/>
-                            )
-                        })
-                    }
-                </div>
-                <table>
-                    <tbody>
+                <ul>
                     
                     { empList.map(emp => {
                     return (
-                                <ListEmp key={emp.id} handleChange={this.handleChange} {...emp} />
+                               <li key={emp.id} className="draggable" draggable="true" onFocus={this.abc}><ListEmp {...emp} /></li> 
                             )
                         }
                     )
                     }   
-                    </tbody>
-                </table>
-            </div>
+                </ul>
         )
     }
 }
